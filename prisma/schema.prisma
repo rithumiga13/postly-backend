@@ -31,19 +31,45 @@ enum PostStatus {
   FAILED
 }
 
+enum Tone {
+  professional
+  casual
+  witty
+  authoritative
+  friendly
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
-  id           String   @id @default(cuid())
-  email        String   @unique
-  passwordHash String
-  name         String?
-  plan         Plan     @default(FREE)
-  createdAt    DateTime @default(now())
-  updatedAt    DateTime @updatedAt
+  id              String   @id @default(cuid())
+  email           String   @unique
+  passwordHash    String
+  name            String
+  bio             String?
+  defaultTone     Tone     @default(professional)
+  defaultLanguage String   @default("en")
+  plan            Plan     @default(FREE)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
 
   socialAccounts SocialAccount[]
   posts          Post[]
+  refreshTokens  RefreshToken[]
+}
+
+model RefreshToken {
+  id         String    @id @default(cuid())
+  userId     String
+  tokenHash  String    @unique
+  revokedAt  DateTime?
+  replacedBy String?
+  expiresAt  DateTime
+  createdAt  DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
 }
 
 model SocialAccount {

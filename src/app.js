@@ -10,7 +10,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(defaultRateLimit);
 
-app.use('/api/v1', router);
+app.use('/api', router);
 
 // 404 — must come after all routes.
 app.use((_req, res) => {

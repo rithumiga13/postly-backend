@@ -151,3 +151,6 @@ dist/
 coverage/
 *.log
 .DS_Store
+src/generated/
+.docker-data/
+build/
