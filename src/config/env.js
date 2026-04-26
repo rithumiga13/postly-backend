@@ -19,6 +19,10 @@ const schema = z.object({
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
 
+  // Model names — override in production to use more capable models.
+  OPENAI_MODEL: z.string().default('gpt-4o-mini'),
+  ANTHROPIC_MODEL: z.string().default('claude-haiku-4-5'),
+
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
 });

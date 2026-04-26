@@ -55,8 +55,11 @@ export class ConflictError extends AppError {
 }
 
 export class AiProviderError extends AppError {
-  constructor(message = 'AI provider error') {
+  constructor(message = 'AI provider error', options = {}) {
     super(message, 502, 'AI_PROVIDER_ERROR');
+    if (options.cause) {
+      this.cause = options.cause;
+    }
   }
 }
 
