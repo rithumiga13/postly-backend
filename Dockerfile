@@ -1,14 +1,25 @@
-FROM node:20-alpine AS base
+FROM node:20-slim
+
+# Prisma needs openssl + ca-certificates at runtime
+RUN apt-get update -y \
+    && apt-get install -y openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /app
 
-# Install dependencies in a separate layer so they are cached unless package.json changes.
+# Install deps first (better layer caching)
 COPY package*.json ./
-RUN npm ci --omit=dev
+COPY prisma ./prisma
+RUN npm ci
 
-COPY . .
-
+# Generate prisma client against the right binaries
 RUN npx prisma generate
 
-EXPOSE 3000
+# Copy the rest of the app
+COPY . .
 
-CMD ["node", "src/server.js"]
+ENV NODE_ENV=production
+EXPOSE 8080
+
+# Apply migrations on boot, then start
+CMD ["sh", "-c", "npx prisma migrate deploy && node src/server.js"]
