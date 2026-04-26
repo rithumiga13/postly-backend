@@ -2,6 +2,9 @@ import { Router } from 'express';
 import prisma from '../lib/prisma.js';
 import { redisOk } from '../lib/redis.js';
 import authRoutes from '../modules/auth/auth.routes.js';
+import socialAccountsRoutes from '../modules/socialAccounts/socialAccounts.routes.js';
+import aiKeysRoutes from '../modules/aiKeys/aiKeys.routes.js';
+import userRoutes from '../modules/user/user.routes.js';
 
 const router = Router();
 
@@ -31,5 +34,13 @@ router.get('/v1/healthz', async (_req, res) => {
 // ─── Auth ─────────────────────────────────────────────────────────────────────
 
 router.use('/auth', authRoutes);
+
+// ─── User ─────────────────────────────────────────────────────────────────────
+// More-specific sub-paths are mounted before the base /user router so that
+// Express does not hand /user/social-accounts to userRoutes prematurely.
+
+router.use('/user/social-accounts', socialAccountsRoutes);
+router.use('/user/ai-keys', aiKeysRoutes);
+router.use('/user', userRoutes);
 
 export default router;
