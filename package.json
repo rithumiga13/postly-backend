@@ -12,6 +12,7 @@
     "test": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postly_test NODE_ENV=test node --experimental-vm-modules node_modules/.bin/jest --forceExit",
     "test:db:setup": "DATABASE_URL=postgresql://postgres:postgres@localhost:5432/postly_test npx prisma migrate deploy",
     "lint": "eslint src --ext .js",
+    "postinstall": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
     "worker": "node src/worker.js"
