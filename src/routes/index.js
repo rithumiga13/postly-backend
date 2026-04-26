@@ -5,6 +5,7 @@ import authRoutes from '../modules/auth/auth.routes.js';
 import socialAccountsRoutes from '../modules/socialAccounts/socialAccounts.routes.js';
 import aiKeysRoutes from '../modules/aiKeys/aiKeys.routes.js';
 import userRoutes from '../modules/user/user.routes.js';
+import aiRoutes from '../modules/ai/ai.routes.js';
 
 const router = Router();
 
@@ -42,5 +43,9 @@ router.use('/auth', authRoutes);
 router.use('/user/social-accounts', socialAccountsRoutes);
 router.use('/user/ai-keys', aiKeysRoutes);
 router.use('/user', userRoutes);
+
+// ─── Content ──────────────────────────────────────────────────────────────────
+
+router.use('/content', aiRoutes);
 
 export default router;
