@@ -1,5 +1,7 @@
-# postly-backend
 
+# Postly
+
+**Live API:** https://postly-backend-production-5259.up.railway.app
 Node.js REST API for the Postly social scheduling platform.
 
 ## Prerequisites
