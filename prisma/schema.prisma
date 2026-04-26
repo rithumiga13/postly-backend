@@ -1,0 +1,82 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum Plan {
+  FREE
+  PRO
+  AGENCY
+}
+
+enum Platform {
+  TWITTER
+  INSTAGRAM
+  LINKEDIN
+  FACEBOOK
+  TELEGRAM
+}
+
+enum PostStatus {
+  DRAFT
+  SCHEDULED
+  PUBLISHING
+  PUBLISHED
+  FAILED
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String   @id @default(cuid())
+  email        String   @unique
+  passwordHash String
+  name         String?
+  plan         Plan     @default(FREE)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  socialAccounts SocialAccount[]
+  posts          Post[]
+}
+
+model SocialAccount {
+  id             String    @id @default(cuid())
+  userId         String
+  platform       Platform
+  platformId     String
+  handle         String?
+  encryptedToken String // AES-256-GCM: iv:authTag:ciphertext (base64)
+  expiresAt      DateTime?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  posts Post[]
+
+  @@unique([userId, platform, platformId])
+}
+
+model Post {
+  id              String     @id @default(cuid())
+  userId          String
+  socialAccountId String
+  body            String
+  mediaUrls       String[]   @default([])
+  scheduledAt     DateTime
+  publishedAt     DateTime?
+  status          PostStatus @default(DRAFT)
+  jobId           String? // BullMQ job ID
+  failReason      String?
+  createdAt       DateTime   @default(now())
+  updatedAt       DateTime   @updatedAt
+
+  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
+  socialAccount SocialAccount @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+}
