@@ -7,6 +7,7 @@ generator client {
   provider      = "prisma-client-js"
   binaryTargets = ["native", "debian-openssl-3.0.x", "linux-musl-openssl-3.0.x"]
 }
+
 // ─── Enums ────────────────────────────────────────────────────────────────────
 
 enum Plan {
@@ -16,11 +17,10 @@ enum Plan {
 }
 
 enum Platform {
-  TWITTER
-  INSTAGRAM
-  LINKEDIN
-  FACEBOOK
-  TELEGRAM
+  twitter
+  linkedin
+  instagram
+  threads
 }
 
 enum PostStatus {
@@ -54,6 +54,7 @@ model User {
   updatedAt       DateTime @updatedAt
 
   socialAccounts SocialAccount[]
+  aiKeys         AiKey?
   posts          Post[]
   refreshTokens  RefreshToken[]
 }
@@ -73,20 +74,30 @@ model RefreshToken {
 }
 
 model SocialAccount {
-  id             String    @id @default(cuid())
-  userId         String
-  platform       Platform
-  platformId     String
-  handle         String?
-  encryptedToken String // AES-256-GCM: iv:authTag:ciphertext (base64)
-  expiresAt      DateTime?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
+  id              String    @id @default(cuid())
+  userId          String
+  platform        Platform
+  handle          String?
+  accessTokenEnc  String // AES-256-GCM: iv:authTag:ciphertext (base64)
+  refreshTokenEnc String?
+  expiresAt       DateTime?
+  connectedAt     DateTime  @default(now())
 
   user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
   posts Post[]
 
-  @@unique([userId, platform, platformId])
+  @@unique([userId, platform])
+  @@index([userId])
+}
+
+model AiKey {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  openaiKeyEnc    String?
+  anthropicKeyEnc String?
+  updatedAt       DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Post {
