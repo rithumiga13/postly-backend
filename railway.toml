@@ -1,0 +1,5 @@
+[deploy]
+healthcheckPath = "/api/v1/healthz"
+healthcheckTimeout = 30
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 3
