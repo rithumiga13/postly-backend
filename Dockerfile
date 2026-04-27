@@ -19,7 +19,8 @@ RUN npx prisma generate
 COPY . .
 
 ENV NODE_ENV=production
-EXPOSE 8080
+ENV PORT=3000
+EXPOSE 3000
 
 # Apply migrations on boot, then start
 CMD ["sh", "-c", "npx prisma migrate deploy && node src/server.js"]
