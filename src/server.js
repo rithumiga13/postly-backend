@@ -2,6 +2,7 @@ import { env } from './config/env.js';
 import { logger } from './config/logger.js';
 import { selfTest } from './lib/crypto.js';
 import { getRedis } from './lib/redis.js';
+import { initBot } from './modules/telegram/bot.js';
 import app from './app.js';
 
 if (env.NODE_ENV === 'development') {
@@ -17,6 +18,17 @@ getRedis().connect().catch(() => {
 const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT, env: env.NODE_ENV }, 'Server started');
 });
+
+// Start Telegram bot after the HTTP server is up.
+const bot = initBot();
+if (bot) {
+  if (env.BOT_MODE === 'polling') {
+    bot.start().catch((err) => logger.error({ err }, 'Bot polling error'));
+    logger.info('Telegram bot started in polling mode');
+  } else {
+    logger.info('Telegram bot ready — waiting for webhook updates');
+  }
+}
 
 // WORKER_INLINE=true: run BullMQ workers inside the web process (single-dyno mode).
 // Trade-off: simpler ops, but CPU-heavy publishing competes with HTTP handling.
