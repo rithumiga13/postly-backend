@@ -18,6 +18,15 @@ const server = app.listen(env.PORT, () => {
   logger.info({ port: env.PORT, env: env.NODE_ENV }, 'Server started');
 });
 
+// WORKER_INLINE=true: run BullMQ workers inside the web process (single-dyno mode).
+// Trade-off: simpler ops, but CPU-heavy publishing competes with HTTP handling.
+// For scale, run `node src/worker.js` as a separate process and set WORKER_INLINE=false.
+if (env.WORKER_INLINE) {
+  import('./worker.js').catch((err) => {
+    logger.error({ err }, 'Failed to start inline workers');
+  });
+}
+
 function shutdown(signal) {
   logger.info({ signal }, 'Shutdown signal received');
   server.close(() => {
