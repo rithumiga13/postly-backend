@@ -67,6 +67,7 @@ model User {
   defaultTone     Tone     @default(professional)
   defaultLanguage String   @default("en")
   plan            Plan     @default(FREE)
+  telegramChatId  String?  @unique
   createdAt       DateTime @default(now())
   updatedAt       DateTime @updatedAt
 
