@@ -68,3 +68,9 @@ export class RateLimitError extends AppError {
     super(message, 429, 'RATE_LIMIT_EXCEEDED');
   }
 }
+
+export class NotImplementedError extends AppError {
+  constructor(message = 'Not implemented') {
+    super(message, 501, 'NOT_IMPLEMENTED');
+  }
+}

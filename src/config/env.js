@@ -25,6 +25,11 @@ const schema = z.object({
 
   RATE_LIMIT_WINDOW_MS: z.coerce.number().int().positive().default(60_000),
   RATE_LIMIT_MAX: z.coerce.number().int().positive().default(100),
+
+  TWITTER_API_KEY: z.string().optional(),
+  TWITTER_API_SECRET: z.string().optional(),
+
+  WORKER_INLINE: z.string().transform((v) => v !== 'false').default('true'),
 });
 
 const parsed = schema.safeParse(process.env);
