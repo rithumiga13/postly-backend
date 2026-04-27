@@ -15,6 +15,9 @@ const schema = z.object({
   JWT_EXPIRES_IN: z.string().default('7d'),
 
   TELEGRAM_BOT_TOKEN: z.string().optional(),
+  BOT_MODE: z.enum(['polling', 'webhook']).default('polling'),
+  TELEGRAM_WEBHOOK_SECRET: z.string().optional(),
+  PUBLIC_URL: z.string().url().optional(),
 
   OPENAI_API_KEY: z.string().optional(),
   ANTHROPIC_API_KEY: z.string().optional(),
