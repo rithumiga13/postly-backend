@@ -23,20 +23,37 @@ enum Platform {
   threads
 }
 
-enum PostStatus {
-  DRAFT
-  SCHEDULED
-  PUBLISHING
-  PUBLISHED
-  FAILED
-}
-
 enum Tone {
   professional
   casual
   witty
   authoritative
   friendly
+}
+
+enum PostType {
+  announcement
+  thread
+  story
+  promotional
+  educational
+  opinion
+}
+
+enum PostStatus {
+  queued
+  processing
+  published
+  failed
+  cancelled
+}
+
+enum JobStatus {
+  queued
+  processing
+  published
+  failed
+  cancelled
 }
 
 // ─── Models ───────────────────────────────────────────────────────────────────
@@ -78,13 +95,12 @@ model SocialAccount {
   userId          String
   platform        Platform
   handle          String?
-  accessTokenEnc  String // AES-256-GCM: iv:authTag:ciphertext (base64)
+  accessTokenEnc  String
   refreshTokenEnc String?
   expiresAt       DateTime?
   connectedAt     DateTime  @default(now())
 
-  user  User   @relation(fields: [userId], references: [id], onDelete: Cascade)
-  posts Post[]
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, platform])
   @@index([userId])
@@ -101,19 +117,37 @@ model AiKey {
 }
 
 model Post {
-  id              String     @id @default(cuid())
-  userId          String
-  socialAccountId String
-  body            String
-  mediaUrls       String[]   @default([])
-  scheduledAt     DateTime
-  publishedAt     DateTime?
-  status          PostStatus @default(DRAFT)
-  jobId           String? // BullMQ job ID
-  failReason      String?
-  createdAt       DateTime   @default(now())
-  updatedAt       DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  userId    String
+  idea      String     @db.VarChar(500)
+  postType  PostType
+  tone      Tone
+  language  String
+  modelUsed String
+  publishAt DateTime?
+  status    PostStatus @default(queued)
+  createdAt DateTime   @default(now())
 
-  user          User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  socialAccount SocialAccount @relation(fields: [socialAccountId], references: [id], onDelete: Cascade)
+  user          User           @relation(fields: [userId], references: [id], onDelete: Cascade)
+  platformPosts PlatformPost[]
+
+  @@index([userId, createdAt])
+  @@index([status])
+}
+
+model PlatformPost {
+  id           String    @id @default(cuid())
+  postId       String
+  platform     Platform
+  content      String
+  status       JobStatus @default(queued)
+  publishedAt  DateTime?
+  errorMessage String?
+  attempts     Int       @default(0)
+  externalId   String?
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, platform])
+  @@index([status])
 }
