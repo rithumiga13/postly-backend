@@ -7,6 +7,7 @@ import aiKeysRoutes from '../modules/aiKeys/aiKeys.routes.js';
 import userRoutes from '../modules/user/user.routes.js';
 import aiRoutes from '../modules/ai/ai.routes.js';
 import postsRoutes from '../modules/posts/posts.routes.js';
+import dashboardRoutes from '../modules/dashboard/dashboard.routes.js';
 
 const router = Router();
 
@@ -52,5 +53,9 @@ router.use('/content', aiRoutes);
 // ─── Posts ────────────────────────────────────────────────────────────────────
 
 router.use('/posts', postsRoutes);
+
+// ─── Dashboard ────────────────────────────────────────────────────────────────
+
+router.use('/dashboard', dashboardRoutes);
 
 export default router;
