@@ -15,7 +15,8 @@
     "postinstall": "prisma generate",
     "prisma:migrate": "prisma migrate dev",
     "prisma:studio": "prisma studio",
-    "worker": "node src/worker.js"
+    "worker": "node src/worker.js",
+    "verify:live": "node scripts/verify-live.js"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^0.91.1",
