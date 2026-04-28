@@ -1,7 +1,7 @@
 import { Worker } from 'bullmq';
 import { env } from '../../../config/env.js';
 import { logger } from '../../../config/logger.js';
-import { processJob, onFailed } from './processor.js';
+import { processJob, onFailed, UnrecoverableError } from './processor.js';
 import { queueName } from '../queue.js';
 
 function getConnectionOpts() {
@@ -29,7 +29,7 @@ export function createInstagramWorker() {
 
   worker.on('failed', async (job, err) => {
     logger.error({ jobId: job?.id, attemptsMade: job?.attemptsMade, err }, 'instagram job failed');
-    if (job && job.attemptsMade >= (job.opts.attempts ?? 1)) {
+    if (job && (err instanceof UnrecoverableError || job.attemptsMade >= (job.opts.attempts ?? 1))) {
       await onFailed(job, err);
     }
   });

@@ -79,10 +79,17 @@ export async function publishFlow(conversation, ctx) {
   const postType = postTypeCtx.callbackQuery.data.replace('postType:', '');
   await postTypeCtx.answerCallbackQuery();
 
-  // ── Step 2: Platforms (multi-select with in-place toggle) ──────────────────
-  const platformMsg = await ctx.reply(
+  // ── Step 2: Platforms (reply keyboard multi-select) ───────────────────────
+  const VALID_PLATFORM_MAP = {
+    twitter: 'twitter',
+    linkedin: 'linkedin',
+    instagram: 'instagram',
+    threads: 'threads',
+  };
+
+  await ctx.reply(
     'Which platforms? (tap to toggle, hit ✓ Done when ready)',
-    { reply_markup: platformKeyboard([]) },
+    { reply_markup: platformKeyboard() },
   );
 
   let selectedPlatforms = [];
@@ -90,37 +97,47 @@ export async function publishFlow(conversation, ctx) {
   while (true) {
     const update = await conversation.wait();
     if (isCancelCommand(update)) {
-      await update.reply('Cancelled');
+      await update.reply('Cancelled', { reply_markup: { remove_keyboard: true } });
       return;
     }
-    if (!update.callbackQuery) {
-      await update.reply('Please use the buttons above, or /cancel to abort.');
+
+    const text = update.message?.text?.trim();
+    if (!text) {
+      await update.reply('Please use the keyboard, or type a platform name, or type done.');
       continue;
     }
-    const data = update.callbackQuery.data;
-    if (data.startsWith('platform:')) {
-      const p = data.replace('platform:', '');
-      selectedPlatforms = selectedPlatforms.includes(p)
-        ? selectedPlatforms.filter((x) => x !== p)
-        : [...selectedPlatforms, p];
-      try {
-        await update.editMessageReplyMarkup({
-          inline_keyboard: platformKeyboard(selectedPlatforms).inline_keyboard,
-        });
-      } catch {
-        // Ignore – same markup or message already edited
-      }
-      await update.answerCallbackQuery();
-    } else if (data === 'done_platforms') {
+
+    // Normalize: lowercase + strip non-word chars so "✓ Done" → "done", "Twitter" → "twitter"
+    const normalized = text.toLowerCase().replace(/[^\w]/g, '');
+
+    if (normalized === 'done') {
       if (selectedPlatforms.length === 0) {
-        await update.answerCallbackQuery({ text: 'Select at least one platform!' });
-      } else {
-        await update.answerCallbackQuery();
-        break;
+        await update.reply('Select at least one platform first!');
+        continue;
       }
-    } else {
-      await update.answerCallbackQuery({ text: 'Please use the buttons for the current step.' });
+      await update.reply(
+        `Platforms locked in: ${selectedPlatforms.map((p) => PLATFORM_LABELS[p]).join(', ')}`,
+        { reply_markup: { remove_keyboard: true } },
+      );
+      break;
     }
+
+    const platform = VALID_PLATFORM_MAP[normalized];
+    if (!platform) {
+      await update.reply(
+        `"${text}" isn't a recognised platform. Type twitter, linkedin, instagram, threads, or done.`,
+      );
+      continue;
+    }
+
+    selectedPlatforms = selectedPlatforms.includes(platform)
+      ? selectedPlatforms.filter((x) => x !== platform)
+      : [...selectedPlatforms, platform];
+
+    const display = selectedPlatforms.length
+      ? selectedPlatforms.map((p) => `✅ ${PLATFORM_LABELS[p]}`).join('  ')
+      : '(none)';
+    await update.reply(`Toggled. Now selected: ${display}`);
   }
 
   // ── Step 3: Tone ─────────────────────────────────────────────────────────

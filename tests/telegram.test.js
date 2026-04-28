@@ -96,3 +96,106 @@ describe('publishFlow — unlinked user', () => {
     expect(mockConversation.wait).not.toHaveBeenCalled();
   });
 });
+
+// ── Test 3: Platform selection via reply keyboard ─────────────────────────────
+
+describe('publishFlow — platform selection', () => {
+  // Builds a minimal update that looks like a text message from the user.
+  function makeTextUpdate(text, replies) {
+    return {
+      message: { text },
+      callbackQuery: null,
+      reply: jest.fn(async (msg, opts) => { replies.push({ text: msg, opts }); return {}; }),
+      answerCallbackQuery: jest.fn(),
+    };
+  }
+
+  // Returns a mockConversation that walks through `waitResponses` in order,
+  // then throws 'stop' once the list is exhausted (halts the flow cleanly).
+  function makeConversation(waitResponses) {
+    let idx = 0;
+    return {
+      external: jest.fn(async () => ({ id: 'user-test', telegramChatId: '12345' })),
+      wait: jest.fn(async () => {
+        const r = waitResponses[idx++];
+        if (!r) throw new Error('stop');
+        return r;
+      }),
+    };
+  }
+
+  it('accepts typed lowercase platform names and "done" to complete selection', async () => {
+    const replies = [];
+
+    const waitResponses = [
+      // Step 1 – post type
+      { callbackQuery: { data: 'postType:announcement' }, answerCallbackQuery: jest.fn(), message: null, reply: jest.fn() },
+      // Step 2 – type 'twitter' (lowercase)
+      makeTextUpdate('twitter', replies),
+      // Step 2 – type 'done' (lowercase)
+      makeTextUpdate('done', replies),
+      // Step 3 onward: exhausted → throws 'stop'
+    ];
+
+    const mockCtx = {
+      from: { id: 12345 },
+      reply: jest.fn(async (text, opts) => { replies.push({ text, opts }); return {}; }),
+    };
+
+    const { publishFlow } = await import('../src/modules/telegram/flows/publish.js');
+    try {
+      await publishFlow(makeConversation(waitResponses), mockCtx);
+    } catch { /* expected stop after platform step */ }
+
+    expect(replies.some((r) => /twitter/i.test(r.text))).toBe(true);
+    expect(replies.some((r) => r.opts?.reply_markup?.remove_keyboard === true)).toBe(true);
+  });
+
+  it('accepts "✓ Done" button text (as sent by reply keyboard) to complete selection', async () => {
+    const replies = [];
+
+    const waitResponses = [
+      { callbackQuery: { data: 'postType:announcement' }, answerCallbackQuery: jest.fn(), message: null, reply: jest.fn() },
+      makeTextUpdate('linkedin', replies),
+      makeTextUpdate('✓ Done', replies),  // exact text the reply keyboard button sends
+    ];
+
+    const mockCtx = {
+      from: { id: 12345 },
+      reply: jest.fn(async (text, opts) => { replies.push({ text, opts }); return {}; }),
+    };
+
+    const { publishFlow } = await import('../src/modules/telegram/flows/publish.js');
+    try {
+      await publishFlow(makeConversation(waitResponses), mockCtx);
+    } catch { /* expected stop after platform step */ }
+
+    expect(replies.some((r) => /linkedin/i.test(r.text))).toBe(true);
+    expect(replies.some((r) => r.opts?.reply_markup?.remove_keyboard === true)).toBe(true);
+  });
+
+  it('rejects "done" when no platforms are selected and retries', async () => {
+    const replies = [];
+
+    const waitResponses = [
+      { callbackQuery: { data: 'postType:announcement' }, answerCallbackQuery: jest.fn(), message: null, reply: jest.fn() },
+      makeTextUpdate('done', replies),      // first done attempt — rejected
+      makeTextUpdate('instagram', replies), // select instagram
+      makeTextUpdate('done', replies),      // second done attempt — accepted
+    ];
+
+    const mockCtx = {
+      from: { id: 12345 },
+      reply: jest.fn(async (text, opts) => { replies.push({ text, opts }); return {}; }),
+    };
+
+    const { publishFlow } = await import('../src/modules/telegram/flows/publish.js');
+    try {
+      await publishFlow(makeConversation(waitResponses), mockCtx);
+    } catch { /* expected stop after platform step */ }
+
+    expect(replies.some((r) => /at least one/i.test(r.text))).toBe(true);
+    expect(replies.some((r) => /instagram/i.test(r.text))).toBe(true);
+    expect(replies.some((r) => r.opts?.reply_markup?.remove_keyboard === true)).toBe(true);
+  });
+});

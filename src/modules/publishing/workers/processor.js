@@ -1,5 +1,7 @@
+import { UnrecoverableError } from 'bullmq';
 import prisma from '../../../lib/prisma.js';
 import { logger } from '../../../config/logger.js';
+import { AppError } from '../../../lib/errors.js';
 import { getDecryptedToken } from '../../socialAccounts/socialAccounts.service.js';
 import { getTwitterClient } from '../platforms/twitter.client.js';
 import { getLinkedinClient } from '../platforms/linkedin.client.js';
@@ -14,6 +16,16 @@ const clients = {
 };
 
 const TERMINAL = new Set(['published', 'failed', 'cancelled']);
+
+// Returns true for errors where retrying cannot help: missing credentials/account,
+// unimplemented platforms, or a 4xx from the platform API (bad tokens, forbidden, etc.).
+function isNonRetryable(err) {
+  if (err instanceof AppError && err.statusCode >= 400 && err.statusCode < 500) return true;
+  if (typeof err.code === 'number' && err.code >= 400 && err.code < 500) return true;
+  return false;
+}
+
+export { UnrecoverableError };
 
 async function updateParentPostStatus(postId) {
   const platformPosts = await prisma.platformPost.findMany({ where: { postId } });
@@ -63,6 +75,7 @@ export async function processJob(job) {
     await updateParentPostStatus(platformPost.postId);
   } catch (err) {
     logger.error({ err, platformPostId, platform }, 'Platform post processing failed');
+    if (isNonRetryable(err)) throw new UnrecoverableError(err.message);
     throw err;
   }
 }

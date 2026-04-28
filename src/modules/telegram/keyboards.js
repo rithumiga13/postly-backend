@@ -1,4 +1,4 @@
-import { InlineKeyboard } from 'grammy';
+import { InlineKeyboard, Keyboard } from 'grammy';
 
 export function postTypeKeyboard() {
   return new InlineKeyboard()
@@ -16,21 +16,12 @@ export const PLATFORM_LABELS = {
   threads: 'Threads',
 };
 
-export function platformKeyboard(selected = []) {
-  const kb = new InlineKeyboard();
-  for (let i = 0; i < PLATFORM_ORDER.length; i += 2) {
-    const left = PLATFORM_ORDER[i];
-    const right = PLATFORM_ORDER[i + 1];
-    const lLabel = (selected.includes(left) ? '✅ ' : '[ ] ') + PLATFORM_LABELS[left];
-    const rLabel = right ? (selected.includes(right) ? '✅ ' : '[ ] ') + PLATFORM_LABELS[right] : null;
-    if (rLabel) {
-      kb.text(lLabel, `platform:${left}`).text(rLabel, `platform:${right}`).row();
-    } else {
-      kb.text(lLabel, `platform:${left}`).row();
-    }
-  }
-  kb.text('✓ Done', 'done_platforms');
-  return kb;
+export function platformKeyboard() {
+  return new Keyboard()
+    .text('Twitter').text('LinkedIn').row()
+    .text('Instagram').text('Threads').row()
+    .text('✓ Done')
+    .resized();
 }
 
 export function toneKeyboard() {
