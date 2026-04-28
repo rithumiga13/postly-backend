@@ -29,6 +29,8 @@ app.post('/telegram/webhook/:secret', async (req, res) => {
   }
 });
 
+app.get('/', (_req, res) => res.redirect('/api/v1/healthz'));
+
 app.use('/api', router);
 
 // 404 — must come after all routes.
