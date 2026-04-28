@@ -21,7 +21,8 @@ export function platformKeyboard() {
     .text('Twitter').text('LinkedIn').row()
     .text('Instagram').text('Threads').row()
     .text('✓ Done')
-    .resized();
+    .resized()
+    .persistent();
 }
 
 export function toneKeyboard() {

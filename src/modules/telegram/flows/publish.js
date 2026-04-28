@@ -88,7 +88,7 @@ export async function publishFlow(conversation, ctx) {
   };
 
   await ctx.reply(
-    'Which platforms? (tap to toggle, hit ✓ Done when ready)',
+    'Which platforms?\n\nTap a button (or type the name) to toggle it, then tap ✓ Done.\n\nOptions: Twitter · LinkedIn · Instagram · Threads',
     { reply_markup: platformKeyboard() },
   );
 
