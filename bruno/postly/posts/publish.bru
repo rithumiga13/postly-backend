@@ -1,0 +1,32 @@
+meta {
+  name: Publish Post
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/posts/publish
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "idea": "Why serverless is the future",
+    "generated": {
+      "twitter": {
+        "content": "Serverless is the future. Here is why. #Serverless #Tech",
+        "char_count": 55,
+        "hashtags": ["#Serverless", "#Tech"]
+      }
+    },
+    "postType": "opinion",
+    "tone": "professional",
+    "language": "en",
+    "modelUsed": "gpt-4o-mini"
+  }
+}

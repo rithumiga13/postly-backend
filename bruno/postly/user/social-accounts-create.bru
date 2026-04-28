@@ -1,0 +1,23 @@
+meta {
+  name: Connect Social Account
+  type: http
+  seq: 3
+}
+
+post {
+  url: {{baseUrl}}/api/v1/user/social-accounts
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "platform": "twitter",
+    "handle": "myhandle",
+    "accessToken": "oauth-access-token"
+  }
+}

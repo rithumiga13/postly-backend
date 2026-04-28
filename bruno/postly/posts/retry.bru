@@ -1,0 +1,15 @@
+meta {
+  name: Retry Post
+  type: http
+  seq: 5
+}
+
+post {
+  url: {{baseUrl}}/api/v1/posts/:id/retry
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

@@ -1,0 +1,26 @@
+meta {
+  name: Generate Content
+  type: http
+  seq: 1
+}
+
+post {
+  url: {{baseUrl}}/api/v1/content/generate
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "idea": "Why serverless is the future of backend development",
+    "post_type": "opinion",
+    "platforms": ["twitter", "linkedin"],
+    "tone": "professional",
+    "language": "en",
+    "model": "openai"
+  }
+}

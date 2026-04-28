@@ -1,0 +1,33 @@
+meta {
+  name: Schedule Post
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/api/v1/posts/schedule
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "idea": "A scheduled post idea",
+    "generated": {
+      "twitter": {
+        "content": "Scheduled for later! #Schedule #Postly",
+        "char_count": 38,
+        "hashtags": ["#Schedule", "#Postly"]
+      }
+    },
+    "postType": "announcement",
+    "tone": "casual",
+    "language": "en",
+    "modelUsed": "gpt-4o-mini",
+    "publishAt": "2026-12-31T12:00:00Z"
+  }
+}

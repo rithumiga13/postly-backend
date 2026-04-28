@@ -1,0 +1,15 @@
+meta {
+  name: Get AI Keys Status
+  type: http
+  seq: 7
+}
+
+get {
+  url: {{baseUrl}}/api/v1/user/ai-keys
+  body: none
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}

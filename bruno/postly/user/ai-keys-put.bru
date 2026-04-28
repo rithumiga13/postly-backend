@@ -1,0 +1,22 @@
+meta {
+  name: Save AI Keys
+  type: http
+  seq: 6
+}
+
+put {
+  url: {{baseUrl}}/api/v1/user/ai-keys
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{accessToken}}
+}
+
+body:json {
+  {
+    "openaiKey": "sk-...",
+    "anthropicKey": "sk-ant-..."
+  }
+}
