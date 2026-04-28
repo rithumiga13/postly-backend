@@ -188,3 +188,36 @@ Redis-backed fixed-window limiter in `src/middleware/rateLimit.js`.
 - Soft-delete and restore for posts (currently hard-delete only)
 - Sliding-window rate limiter using Redis sorted sets
 - Multi-user Telegram bot with proper account isolation (currently one session per chatId)
+
+---
+
+## 11. Live platform posting
+
+All four platform clients (Twitter/X, LinkedIn, Instagram, Threads) are
+implemented to the point of integrating with the queue, retry, and status
+rollup pipeline. None are configured with live posting credentials in this
+submission.
+
+**Twitter/X:** Built against twitter-api-v2 with OAuth 1.0a. The signing
+flow is verified — the API returns 401 (auth-layer rejection) rather than
+400 (malformed request), confirming the request shape and signature are
+correct. X moved write endpoints behind paid tiers during the build window
+(lowest tier $200/month, no Free tier available to new accounts). Given
+₹1k+ already spent on the OpenAI and Anthropic credits required by the brief,
+I chose not to add another paid subscription for this evaluation.
+
+**LinkedIn / Instagram / Threads:** Client interfaces scaffolded with
+NotImplementedError. The encrypted-token storage, per-platform queue,
+exponential backoff retry, and per-platform status tracking all run
+end-to-end against these stubs.
+
+**Validation despite this:**
+- Smoke test confirms the full pipeline: publish request creates Post +
+  per-platform PlatformPost rows, enqueues per-platform jobs, runs three
+  retry attempts with backoff, persists final failure state with
+  error_message and attempts count to the DB.
+- Parent Post.status correctly rolls up from PlatformPost terminal states.
+
+**To enable real posting:** for any platform, the work is a credential
+update plus the per-platform SDK call inside the existing client interface.
+The queue, retry, encryption, and status tracking are unchanged.

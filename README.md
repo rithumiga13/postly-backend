@@ -174,7 +174,10 @@ Railway with Dockerfile build:
 - **Twitter only**: Twitter is the only fully-implemented publishing client. LinkedIn, Instagram, and Threads exercise the queue/retry pipeline but throw `NotImplementedError` at publish time.
 - **Worker inline**: Workers run in the same process as the web server by default (`WORKER_INLINE=true`) for Railway single-service deploys. Set `WORKER_INLINE=false` and run `node src/worker.js` as a separate service for production scale.
 - **OAuth not implemented**: Social account tokens are stored directly via the API. The OAuth callback flow (Twitter PIN, LinkedIn redirect) is not implemented.
-
+- **Live platform posting:** All four platform clients are scaffolded and run
+  through the queue/retry pipeline against stubs. Real posting credentials
+  are not configured in this submission. See ARCHITECTURE.md "Live platform
+  posting" for details.
 ---
 
 ## References
